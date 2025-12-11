@@ -1,116 +1,100 @@
-# Analyse van populariteit, verkoop en spelersbeoordelingen van videogames
+#  Data Visualization Project – Earthquake Risk Analysis
 
-In dit project onderzoek ik hoe **verkoopcijfers**, **spelersreviews** en **game-kenmerken** (genre, prijs, releasejaar) met elkaar samenhangen.  
-De volledige analyse gebeurt met **Apache Spark** in een Jupyter Notebook.
+Dit project onderzoekt de relatie tussen **aardbevingen**, **tektonische plaatgrenzen** en **bevolkingsrisico**.  
+Met behulp van **PySpark** en **Folium** werd een uitgebreide analyse gemaakt van wereldwijde seismische activiteit, waarbij de nadruk ligt op:
 
----
-
-## Doel van het project
-
-Dit project probeert de volgende onderzoeksvragen te beantwoorden:
-
-- Welke genres verkopen het best (volledige verkoopdataset)?
-- Welke genres krijgen de beste reviews (Steam-data)?
-- Is er een verband tussen **prijs** en **reviewscore**?
-- Is spelerstevredenheid een voorspeller van **verkoopcijfers**?
-- Hoe verschillen commerciële toppers van best beoordeelde games?
-
-Via datacleaning, normalisatie en joins ontstaat een geïntegreerde subset van **208 games** waarvoor zowel reviewdata, metadata als verkoopcijfers beschikbaar zijn.
+- Waar zware aardbevingen het vaakst voorkomen  
+- Hoe dicht deze aardbevingen bij tektonische plaatgrenzen liggen  
+- Welke landen het grootste risico lopen op menselijke impact op basis van populatie en nabijgelegen seismische activiteit  
 
 ---
 
-## Gebruikte datasets
+## **Doel van het project**
 
-### **1. Steam Reviews - gebruikersbeoordelingen**
-Miljoenen reviews van Steam, gebruikt om per game een **positive_ratio** te berekenen.  
-https://www.kaggle.com/datasets/andrewmvd/steam-reviews
+Het doel van dit project is na te gaan of:
 
-### **2. Steam Store Games - metadata per game**
-Bevat genres, prijs, releasejaar, platformen en rating-aantallen.  
-https://www.kaggle.com/datasets/nikdavis/steam-store-games
-
-### **3. Video Game Sales - wereldwijde verkoopcijfers**
-Fysieke verkoopcijfers (1980-2016), per platform en regio.  
-https://www.kaggle.com/datasets/gregorut/videogamesales
-
-> De ruwe data wordt **niet gecommit** in deze repository. Enkel links naar de originele bronnen zijn aanwezig.
+1. **Zware aardbevingen** (Magnitude ≥ 6.5) voornamelijk voorkomen in de buurt van tektonische plaatgrenzen.  
+2. **Dichtbevolkte landen** in deze actieve regio’s daardoor een **hoger risico** lopen op grote menselijke impact.
 
 ---
 
-## Dataverwerking & Methodologie
+## **Hypothese**
 
-### Cleaning
-- Conversie van prijzen, datums en ratingkolommen  
-- Opschonen van reviews en renaming  
-- Null-checks en typeconversies  
-
-### Normalisatie
-- Game-namen genormaliseerd (`lower` + `trim`)
-- Releasejaar geëxtraheerd met `to_date` + `year`
-
-### Joins
-1. **Steam Reviews <-> Steam Metadata** via `appid`  
-2. **Steam Metadata <-> Video Game Sales** via `name_norm + release_year`
-
-Daarna worden verkoopcijfers over platformen samengevoegd tot één `total_global_sales`.
-
-### Finale dataset bevat:
-- totale verkoop (geaggregeerd)
-- prijs
-- genres
-- releasejaar
-- totale reviews
-- positieve reviewratio
-
-Totaal: **208 unieke games** in de geïntegreerde subset.
+**“Aardbevingen dichter bij de grenzen van tektonische platen hebben gemiddeld een hogere magnitude en komen vaker voor.  
+Wanneer deze gebeurtenissen plaatsvinden in dichtbevolkte regio’s, stijgt het risico op menselijke impact aanzienlijk.”**
 
 ---
 
-## Kernresultaten & inzichten
+## **Gebruikte technologieën**
 
-### Verkoop (Video Game Sales dataset)
-- **Action** is veruit het best verkopende genre, gevolgd door Sports, Shooter, RPG en Adventure.
-- De historische verkooppiek ligt rond **2005-2009** (Xbox 360, PS3, Wii-generation).
-- Na 2010 daalt de fysieke verkoop door de shift naar **digitale distributie** (niet opgenomen in deze dataset).
-
-### Reviews (Steam Reviews + Metadata)
-- Genres zoals **Indie**, **Adventure**, **Casual** en sommige niche-genres scoren het hoogst qua **positive_ratio**.
-- Reviewkwaliteit volgt een ander patroon dan commerciële verkoop:  
-  **wat verkoopt is niet wat het best beoordeeld wordt.**
-
-### Correlaties (208 games subset)
-- **Bijna geen correlatie** tussen:
-  - prijs <-> reviewscore  
-  - reviewscore <-> verkoop  
-- Zowel goedkope als dure games kunnen goede of slechte reviews hebben.
-- Zeer goed verkopende games hebben niet noodzakelijk de hoogste reviewratio.
-
-### AAA-dominantie
-- De top 10 qua verkoop bestaat bijna volledig uit **grote AAA-franchises**:
-  GTA, Skyrim, Call of Duty, Fallout, ...
+- **PySpark** — dataverwerking zonder Pandas  
+- **Folium** — interactieve wereldkaarten  
+- **Haversine-formule** — berekening van geografische afstand  
+- **Spark DataFrames** — filtering, grouping, aggregations  
+- **JSON / Python dicts** — opslag van risicoresultaten  
 
 ---
 
-## Technologieën
+## **Datasets**
 
-- Apache Spark (PySpark)
-- Pandas
-- Matplotlib & Seaborn
-- Jupyter Notebook
+1. **Aardbevingen**  
+   - Bron: ISC-GEM database  
+   - Kolommen: Datum, Tijd, Magnitude, Locatie, Diepte, enz.
 
----
+2. **Tektonische plaatgrenzen**  
+   - Coördinaten per plaatsegment (`plate`, `lat`, `lon`)
 
-## Limitaties
-
-- Enkel games die in **alle drie** de datasets voorkomen worden geanalyseerd -> subset van **208 games**.
-- Verkoopdataset bevat geen **digitale verkoop** -> moderne games (na 2016) ontbreken.
-- Analyse is dus representatief voor **grote multiplatform titels van 2004-2016**, niet voor de volledige markt.
+3. **Bevolkingscijfers per land (2020)**  
+   - Kolommen: Land, Populatie, Urban %, Density, enz.
 
 ---
 
-## Eindconclusie
+## **Visualisaties**
 
-Spelerstevredenheid, prijs en verkoop blijken **slechts zwak met elkaar verbonden**.  
-Commercieel succes lijkt veel sterker gedreven door factoren zoals **marketing, franchisebekendheid en platformstrategie** dan door de prijs of Steam-reviewratio.
+### 1. **Kaart met sterke aardbevingen**
+- Rode markers = aardbevingen binnen 100 km van een plaatgrens  
+- Blauwe markers = aardbevingen ver van platen  
+- Interactieve pop-ups met magnitude en diepte  
+- We tonen alleen Magnitude ≥ 6.5  
 
-Dit project toont hoe dataset-integratie met Spark waardevolle inzichten kan opleveren, maar ook hoe belangrijk het is om de **beperkingen van datasets** te begrijpen bij het interpreteren van resultaten.
+### 2. **Kaart met tektonische platen + aardbevingen**
+- Alle plaatgrenzen geplot met Folium PolyLines  
+- Overlap met aardbevingsclusters maakt het patroon duidelijk zichtbaar  
+
+
+## **Belangrijkste bevindingen**
+
+- Het merendeel van de zware aardbevingen bevindt zich **langs plaatgrenzen**, wat de geologische verwachting bevestigt.  
+- Landen als **Japan, Indonesië, Mexico, de Filipijnen en de VS (westkust)** hebben een **hoge risicoscore** doordat zij zowel veel seismische activiteit als een grote bevolking combineren.  
+- Grote landen met weinig seismische activiteit (**Duitsland, Nigeria, Frankrijk, Rusland**) scoren laag ondanks een hoge populatie.  
+- Bevolking op zichzelf voorspelt géén risico — de combinatie **"plaatactiviteit × bevolkingsdichtheid"** wel.
+
+---
+
+## **Moeilijkheden tijdens het project**
+
+- Veel ontbrekende waarden in de aardbevingsdataset  
+- Geen gebruik van Pandas → volledige dataverwerking in Spark  
+- Spark ondersteunt geen geospatiale functies → Haversine zelf implementeren  
+- Folium werkt niet direct met Spark DataFrames → data moest eerst `collect()` worden  
+- Afwegen tussen performance en nauwkeurigheid door sample-gebaseerde benaderingen  
+- Geen polygondata beschikbaar → landen benaderd via geografisch middelpunt  
+- Visuele balans vinden tussen overlappende lagen en informatieve kaarten  
+
+---
+
+## **Conclusie**
+
+Het project bevestigt de hypothese:  
+- **Zware aardbevingen clusteren langs tektonische plaatgrenzen**, niet willekeurig verdeeld.  
+- **Dichtbevolkte landen in deze zones hebben een significant hoger risico op menselijke impact.**
+
+De combinatie van geologische data, Spark-verwerking en Folium-visualisatie geeft een duidelijk inzicht in waar op aarde de grootste risicozones liggen.
+
+---
+
+## Auteur
+
+Benjamin Vercauteren  
+AP Hogeschool – Data Visualization Project  
+2025
